@@ -13,7 +13,6 @@ func InitializeClient(ckey string, csecret string, atoken string, asecret string
 	anaconda.SetConsumerKey(ckey)
 	anaconda.SetConsumerSecret(csecret)
 	api := anaconda.NewTwitterApi(atoken, asecret)
-	fmt.Println(*api.Credentials)
 	return *api
 }
 
