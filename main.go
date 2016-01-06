@@ -24,6 +24,7 @@ func IsTweeted(subject string, api anaconda.TwitterApi) bool {
 	}
 	for _, tweet := range tweets {
 		fmt.Println(tweet.Text)
+		fmt.Println("searching subject :" + subject)
 		found := strings.Contains(tweet.Text, subject)
 
 		if found {
