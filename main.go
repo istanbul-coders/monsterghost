@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/ChimeraCoder/anaconda"
+	"github.com/memgo/api/meetup"
 )
 
 func InitializeClient(ckey string, csecret string, atoken string, asecret string) anaconda.TwitterApi {
@@ -49,7 +51,7 @@ func IsEventCreated(desc string, apikey string) bool {
 	url := fmt.Sprintf("https://api.meetup.com/2/events?key=%s&group_urlname=Istanbul-Hackers&sign=true&status=past,upcoming", apikey)
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println("Error occured during meetup search")
+		fmt.Println("Error occured during meetup search", err)
 		os.Exit(1)
 	}
 	buf := new(bytes.Buffer)
@@ -58,9 +60,26 @@ func IsEventCreated(desc string, apikey string) bool {
 	return strings.Contains(responseBody, desc)
 }
 
-func initiateMeetup(desc string, apikey string) {
+func CreateEvent(apikey string, gid string, name string, vid string) string {
+	url := fmt.Sprintf("https://api.meetup.com/2/event?key=%s&group_urlname=Istanbul-Hackers&group_id=%s&name=%s&sign=true&publish_status=draft&venue_id=%s", apikey, gid, name, vid)
+	resp, err := http.Post(url, "application/x-www-form-urlencoded", nil)
+	if err != nil {
+		fmt.Println("Error occured while creating meetup event", err)
+		os.Exit(1)
+	}
+
+	event := new(meetup.Event)
+	decoder := json.NewDecoder(resp.Body)
+	decoder.Decode(event)
+
+	return event.EventUrl
+}
+
+func initiateMeetup(desc string, apikey string, gid string, name string, vid string) {
 	eventCreated := IsEventCreated(desc, apikey)
 	fmt.Println("Meetup Event Created: ", eventCreated)
+
+	CreateEvent(apikey, gid, name, vid)
 	if eventCreated {
 		os.Exit(0)
 	}
@@ -83,7 +102,6 @@ func initiateTweet(ckey string, csecret string, atoken string, asecret string, s
 
 }
 func main() {
-
 	commandType := os.Args[1]
 
 	switch commandType {
@@ -92,9 +110,12 @@ func main() {
 		mySet := flag.NewFlagSet("", flag.ExitOnError)
 		var desc = mySet.String("desc", "", "Description of the meetup event")
 		var apikey = mySet.String("apikey", "", "meetup developer apikey")
+		var gid = mySet.String("gid", "", "Groug id")
+		var name = mySet.String("name", "", "Name of the event")
+		var vid = mySet.String("vid", "", "Venue id")
 		mySet.Parse(os.Args[2:])
 
-		initiateMeetup(*desc, *apikey)
+		initiateMeetup(*desc, *apikey, *gid, *name, *vid)
 	case "twitter":
 		fmt.Println("Twitter")
 		var ckey string
