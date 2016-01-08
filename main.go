@@ -67,10 +67,12 @@ func CreateEvent(apikey string, gid string, name string, vid string) string {
 		fmt.Println("Error occured while creating meetup event", err)
 		os.Exit(1)
 	}
+	fmt.Println("Meetup Create Event Response :", resp)
 
 	event := new(meetup.Event)
 	decoder := json.NewDecoder(resp.Body)
 	decoder.Decode(event)
+	fmt.Println(event)
 
 	return event.EventUrl
 }
