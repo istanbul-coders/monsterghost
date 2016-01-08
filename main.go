@@ -108,7 +108,6 @@ func main() {
 
 	switch commandType {
 	case "meetup":
-		fmt.Println("Meetup")
 		mySet := flag.NewFlagSet("", flag.ExitOnError)
 		var desc = mySet.String("desc", "", "Description of the meetup event")
 		var apikey = mySet.String("apikey", "", "meetup developer apikey")
@@ -117,9 +116,9 @@ func main() {
 		var vid = mySet.String("vid", "", "Venue id")
 		mySet.Parse(os.Args[2:])
 
+		fmt.Println(mySet.Args())
 		initiateMeetup(*desc, *apikey, *gid, *name, *vid)
 	case "twitter":
-		fmt.Println("Twitter")
 		var ckey string
 		var csecret string
 		var atoken string
