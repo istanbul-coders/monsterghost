@@ -120,7 +120,6 @@ func main() {
 		var vid = mySet.String("vid", "", "Venue id")
 		mySet.Parse(os.Args[2:])
 
-		fmt.Println(mySet.Args())
 		initiateMeetup(*desc, *apikey, *gid, *name, *vid)
 	case "twitter":
 		var ckey string
