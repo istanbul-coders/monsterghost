@@ -60,8 +60,8 @@ func IsEventCreated(desc string, apikey string) bool {
 	return strings.Contains(responseBody, desc)
 }
 
-func CreateEvent(apikey string, gid string, name string, vid string) string {
-	url := fmt.Sprintf("https://api.meetup.com/2/event?key=%s&group_urlname=Istanbul-Hackers&group_id=%s&name=%s&sign=true&publish_status=draft&venue_id=%s", apikey, gid, name, vid)
+func CreateEvent(apikey string, gid string, name string, desc string, vid string) string {
+	url := fmt.Sprintf("https://api.meetup.com/2/event?key=%s&group_urlname=Istanbul-Hackers&group_id=%s&name=%s&sign=true&publish_status=draft&description=%s&venue_id=%s", apikey, gid, name, desc, vid)
 	resp, err := http.Post(url, "application/x-www-form-urlencoded", nil)
 	if err != nil {
 		fmt.Println("Error occured while creating meetup event", err)
@@ -79,12 +79,16 @@ func CreateEvent(apikey string, gid string, name string, vid string) string {
 
 func initiateMeetup(desc string, apikey string, gid string, name string, vid string) {
 	eventCreated := IsEventCreated(desc, apikey)
-	fmt.Println("Meetup Event Created: ", eventCreated)
+	fmt.Println("Meetup Event Created? : ", eventCreated)
 
-	CreateEvent(apikey, gid, name, vid)
 	if eventCreated {
 		os.Exit(0)
 	}
+
+	fmt.Println("Creating event with following parameters:")
+	fmt.Println("Desc: ", desc)
+	fmt.Println("Name: ", name)
+	CreateEvent(apikey, gid, name, desc, vid)
 }
 
 func initiateTweet(ckey string, csecret string, atoken string, asecret string, subject string) {
