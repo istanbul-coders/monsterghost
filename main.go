@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -48,20 +47,32 @@ func UpdateStatus(subject string, api anaconda.TwitterApi) bool {
 	return true
 }
 
-func IsEventCreated(desc string, apikey string) bool {
+func IsEventCreated(name string, apikey string) bool {
 	url := fmt.Sprintf("https://api.meetup.com/2/events?key=%s&group_urlname=Istanbul-Hackers&sign=true&status=past,upcoming", apikey)
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println("Error occured during meetup search", err)
 		os.Exit(1)
 	}
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(resp.Body)
-	responseBody := buf.String()
-	return strings.Contains(responseBody, desc)
+	//	buf := new(bytes.Buffer)
+	//	buf.ReadFrom(resp.Body)
+	//
+	events := new(meetup.Events)
+	decoder := json.NewDecoder(resp.Body)
+	decoder.Decode(events)
+
+	for _, event := range events.Results {
+		fmt.Println("Response event name: ", event.Name)
+		fmt.Println("New event name: ", name)
+		if strings.Contains(event.Name, name) {
+			return true
+		}
+	}
+
+	return false
 }
 
-func CreateEvent(apikey string, gid string, name string, desc string, vid string, rsvp_limit string) string {
+func CreateEvent(apikey string, gid string, name string, desc string, vid string, rsvp_limit string) *meetup.Event {
 	meetup_url := "https://api.meetup.com/2/event"
 
 	key := fmt.Sprintf("?key=%s", apikey)
@@ -82,40 +93,26 @@ func CreateEvent(apikey string, gid string, name string, desc string, vid string
 	name = fmt.Sprintf("&name=%s", url.QueryEscape(name))
 	meetup_url = fmt.Sprint(meetup_url, name)
 
-	//	sign := "&sign=true"
-	//	url = fmt.Sprint(url, sign)
-	//
-	//	publish := "&publish_status=draft"
-	//	url = fmt.Sprint(url, publish)
-	//
 	description := fmt.Sprintf("&description=%s", url.QueryEscape(desc))
 	meetup_url = fmt.Sprint(meetup_url, description)
 
-	//	u, err := url.Parse(meetup_url)
-	//	if err != nil {
-	//		log.Fatal(err)
-	//	}
-	//
 	fmt.Println("Url :", meetup_url)
-	fmt.Println("Url :", url.QueryEscape(meetup_url))
 	resp, err := http.Post(meetup_url, "application/x-www-form-urlencoded", nil)
 	if err != nil {
 		fmt.Println("Error occured while creating meetup event", err)
 		os.Exit(1)
 	}
-	fmt.Println("Meetup Create Event Response :", resp)
-	fmt.Println("Meetup Create Event Response Body :", resp.Body)
 
 	event := new(meetup.Event)
 	decoder := json.NewDecoder(resp.Body)
 	decoder.Decode(event)
 	fmt.Println(event)
 
-	return event.EventUrl
+	return event
 }
 
 func initiateMeetup(desc string, apikey string, gid string, name string, vid string, rsvp_limit string) {
-	eventCreated := IsEventCreated(desc, apikey)
+	eventCreated := IsEventCreated(name, apikey)
 	fmt.Println("Meetup Event Created? : ", eventCreated)
 
 	if eventCreated {
