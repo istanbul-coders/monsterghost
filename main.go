@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/ChimeraCoder/anaconda"
 	"github.com/memgo/api/meetup"
@@ -72,7 +73,7 @@ func IsEventCreated(name string, apikey string) bool {
 	return false
 }
 
-func CreateEvent(apikey string, gid string, name string, desc string, vid string, rsvp_limit string) *meetup.Event {
+func CreateEvent(apikey string, gid string, name string, desc string, vid string, rsvp_limit string, epocs string) *meetup.Event {
 	meetup_url := "https://api.meetup.com/2/event"
 
 	key := fmt.Sprintf("?key=%s", apikey)
@@ -90,6 +91,11 @@ func CreateEvent(apikey string, gid string, name string, desc string, vid string
 	rsvp_limit = fmt.Sprintf("&rsvp_limit=%s", rsvp_limit)
 	meetup_url = fmt.Sprint(meetup_url, rsvp_limit)
 
+	epocs_in_ms, _ := time.Parse(time.RFC1123Z, epocs)
+	epocs_txt := fmt.Sprintf("&time=%d", (epocs_in_ms.UnixNano() / int64(time.Millisecond)))
+	fmt.Println("Epocs in txt: ", epocs_txt)
+	meetup_url = fmt.Sprint(meetup_url, epocs_txt)
+
 	name = fmt.Sprintf("&name=%s", url.QueryEscape(name))
 	meetup_url = fmt.Sprint(meetup_url, name)
 
@@ -103,6 +109,7 @@ func CreateEvent(apikey string, gid string, name string, desc string, vid string
 		os.Exit(1)
 	}
 
+	fmt.Println("Post Response:", resp)
 	event := new(meetup.Event)
 	decoder := json.NewDecoder(resp.Body)
 	decoder.Decode(event)
@@ -111,7 +118,7 @@ func CreateEvent(apikey string, gid string, name string, desc string, vid string
 	return event
 }
 
-func initiateMeetup(desc string, apikey string, gid string, name string, vid string, rsvp_limit string) {
+func initiateMeetup(desc string, apikey string, gid string, name string, vid string, rsvp_limit string, time string) {
 	eventCreated := IsEventCreated(name, apikey)
 	fmt.Println("Meetup Event Created? : ", eventCreated)
 
@@ -122,8 +129,9 @@ func initiateMeetup(desc string, apikey string, gid string, name string, vid str
 	fmt.Println("Creating event with following parameters:")
 	fmt.Println("Desc: ", desc)
 	fmt.Println("Name: ", name)
+	fmt.Println("Time: ", time)
 	fmt.Println("Guest Limit: ", rsvp_limit)
-	CreateEvent(apikey, gid, name, desc, vid, rsvp_limit)
+	CreateEvent(apikey, gid, name, desc, vid, rsvp_limit, time)
 }
 
 func initiateTweet(ckey string, csecret string, atoken string, asecret string, subject string) {
@@ -154,9 +162,10 @@ func main() {
 		var name = mySet.String("name", "", "Name of the event")
 		var vid = mySet.String("vid", "", "Venue id")
 		var rsvp_limit = mySet.String("rsvp_limit", "", "Rsvp Limit")
+		var time = mySet.String("time", "", "Time for the event")
 		mySet.Parse(os.Args[2:])
 
-		initiateMeetup(*desc, *apikey, *gid, *name, *vid, *rsvp_limit)
+		initiateMeetup(*desc, *apikey, *gid, *name, *vid, *rsvp_limit, *time)
 	case "twitter":
 		var ckey string
 		var csecret string
