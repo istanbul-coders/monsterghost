@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -60,14 +61,50 @@ func IsEventCreated(desc string, apikey string) bool {
 	return strings.Contains(responseBody, desc)
 }
 
-func CreateEvent(apikey string, gid string, name string, desc string, vid string) string {
-	url := fmt.Sprintf("https://api.meetup.com/2/event?key=%s&group_urlname=Istanbul-Hackers&group_id=%s&name=%s&sign=true&publish_status=draft&description=%s&venue_id=%s", apikey, gid, name, desc, vid)
-	resp, err := http.Post(url, "application/x-www-form-urlencoded", nil)
+func CreateEvent(apikey string, gid string, name string, desc string, vid string, rsvp_limit string) string {
+	meetup_url := "https://api.meetup.com/2/event"
+
+	key := fmt.Sprintf("?key=%s", apikey)
+	meetup_url = fmt.Sprint(meetup_url, key)
+
+	groupUrlName := "&group_urlname=Istanbul-Hackers"
+	meetup_url = fmt.Sprint(meetup_url, groupUrlName)
+
+	groupId := fmt.Sprintf("&group_id=%s", gid)
+	meetup_url = fmt.Sprint(meetup_url, groupId)
+
+	venue := fmt.Sprintf("&venue_id=%s", vid)
+	meetup_url = fmt.Sprint(meetup_url, venue)
+
+	rsvp_limit = fmt.Sprintf("&rsvp_limit=%s", rsvp_limit)
+	meetup_url = fmt.Sprint(meetup_url, rsvp_limit)
+
+	name = fmt.Sprintf("&name=%s", url.QueryEscape(name))
+	meetup_url = fmt.Sprint(meetup_url, name)
+
+	//	sign := "&sign=true"
+	//	url = fmt.Sprint(url, sign)
+	//
+	//	publish := "&publish_status=draft"
+	//	url = fmt.Sprint(url, publish)
+	//
+	description := fmt.Sprintf("&description=%s", url.QueryEscape(desc))
+	meetup_url = fmt.Sprint(meetup_url, description)
+
+	//	u, err := url.Parse(meetup_url)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//
+	fmt.Println("Url :", meetup_url)
+	fmt.Println("Url :", url.QueryEscape(meetup_url))
+	resp, err := http.Post(meetup_url, "application/x-www-form-urlencoded", nil)
 	if err != nil {
 		fmt.Println("Error occured while creating meetup event", err)
 		os.Exit(1)
 	}
 	fmt.Println("Meetup Create Event Response :", resp)
+	fmt.Println("Meetup Create Event Response Body :", resp.Body)
 
 	event := new(meetup.Event)
 	decoder := json.NewDecoder(resp.Body)
@@ -77,7 +114,7 @@ func CreateEvent(apikey string, gid string, name string, desc string, vid string
 	return event.EventUrl
 }
 
-func initiateMeetup(desc string, apikey string, gid string, name string, vid string) {
+func initiateMeetup(desc string, apikey string, gid string, name string, vid string, rsvp_limit string) {
 	eventCreated := IsEventCreated(desc, apikey)
 	fmt.Println("Meetup Event Created? : ", eventCreated)
 
@@ -88,7 +125,8 @@ func initiateMeetup(desc string, apikey string, gid string, name string, vid str
 	fmt.Println("Creating event with following parameters:")
 	fmt.Println("Desc: ", desc)
 	fmt.Println("Name: ", name)
-	CreateEvent(apikey, gid, name, desc, vid)
+	fmt.Println("Guest Limit: ", rsvp_limit)
+	CreateEvent(apikey, gid, name, desc, vid, rsvp_limit)
 }
 
 func initiateTweet(ckey string, csecret string, atoken string, asecret string, subject string) {
@@ -118,9 +156,10 @@ func main() {
 		var gid = mySet.String("gid", "", "Groug id")
 		var name = mySet.String("name", "", "Name of the event")
 		var vid = mySet.String("vid", "", "Venue id")
+		var rsvp_limit = mySet.String("rsvp_limit", "", "Rsvp Limit")
 		mySet.Parse(os.Args[2:])
 
-		initiateMeetup(*desc, *apikey, *gid, *name, *vid)
+		initiateMeetup(*desc, *apikey, *gid, *name, *vid, *rsvp_limit)
 	case "twitter":
 		var ckey string
 		var csecret string
