@@ -186,5 +186,8 @@ func main() {
 		}
 
 		initiateTweet(ckey, csecret, atoken, asecret, subject)
+	case "gmail":
+		client := connectToGmail()
+		getLabels(client)
 	}
 }
