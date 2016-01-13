@@ -165,6 +165,10 @@ func main() {
 		var time = mySet.String("time", "", "Time for the event")
 		mySet.Parse(os.Args[2:])
 
+		if !mySet.Parsed() {
+			fmt.Println("Error parsing arguments:", mySet.Args())
+		}
+
 		initiateMeetup(*desc, *apikey, *gid, *name, *vid, *rsvp_limit, *time)
 	case "twitter":
 		var ckey string
@@ -182,12 +186,31 @@ func main() {
 		mySet.Parse(os.Args[2:])
 
 		if !mySet.Parsed() {
-			fmt.Println(mySet.Args())
+			fmt.Println("Error parsing arguments:", mySet.Args())
 		}
 
 		initiateTweet(ckey, csecret, atoken, asecret, subject)
 	case "gmail":
-		client := connectToGmail()
-		getLabels(client)
+		var to string
+		var from string
+		var subject string
+		var body string
+		var username string
+		var password string
+
+		mySet := flag.NewFlagSet("", flag.ExitOnError)
+		mySet.StringVar(&to, "to", "", "email to")
+		mySet.StringVar(&from, "from", "", "email from")
+		mySet.StringVar(&subject, "subject", "", "email subject")
+		mySet.StringVar(&body, "body", "", "email body")
+		mySet.StringVar(&username, "username", "", "email username")
+		mySet.StringVar(&password, "password", "", "email password")
+		mySet.Parse(os.Args[2:])
+
+		if !mySet.Parsed() {
+			fmt.Println("Error parsing arguments:", mySet.Args())
+		}
+
+		sendEmail(to, from, subject, body, username, password)
 	}
 }
