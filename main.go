@@ -7,6 +7,12 @@ import (
 	"os"
 )
 
+func check(e error) {
+	if e != nil {
+		fmt.Println("Error :", e)
+	}
+}
+
 func main() {
 	commandType := os.Args[1]
 
@@ -29,10 +35,7 @@ func main() {
 		eventUrl := initiateMeetup(*desc, *apikey, *gid, *name, *vid, *rsvp_limit, *time)
 		eventurlfile := []byte(eventUrl)
 		err := ioutil.WriteFile("eventurl.md", eventurlfile, 0644)
-
-		if err != nil {
-			fmt.Println("Error writing to event file", err)
-		}
+		check(err)
 
 	case "twitter":
 		var ckey string

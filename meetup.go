@@ -35,7 +35,8 @@ func isEventCreated(name string, apikey string) bool {
 }
 
 func createEvent(apikey string, gid string, name string, desc string, vid string, rsvp_limit string, epocs string) *meetup.Event {
-	meetup_url := "https://api.meetup.com/2/event"
+	meetup_url := "https://api.meetup.com/2/event/"
+	meetup_root_url := meetup_url
 
 	key := fmt.Sprintf("?key=%s", apikey)
 	meetup_url = fmt.Sprint(meetup_url, key)
@@ -75,6 +76,18 @@ func createEvent(apikey string, gid string, name string, desc string, vid string
 	decoder.Decode(event)
 	fmt.Println(event)
 
+	meetup_root_url = meetup_root_url + event.Id
+	meetup_root_url = fmt.Sprint(meetup_root_url, key)
+	meetup_root_url = meetup_root_url + "&announce=true"
+
+	fmt.Println("Meetup update request url:", meetup_root_url)
+	resp, err = http.Post(meetup_root_url, "application/x-www-form-urlencoded", nil)
+	if err != nil {
+		fmt.Println("Error occured while announcing meetup event", err)
+
+		os.Exit(1)
+	}
+	fmt.Println("Post Response:", resp)
 	return event
 }
 
@@ -92,5 +105,6 @@ func initiateMeetup(desc string, apikey string, gid string, name string, vid str
 	fmt.Println("Time: ", time)
 	fmt.Println("Guest Limit: ", rsvp_limit)
 	event := createEvent(apikey, gid, name, desc, vid, rsvp_limit, time)
+
 	return event.EventUrl
 }
