@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 )
 
@@ -25,7 +26,14 @@ func main() {
 			fmt.Println("Error parsing arguments:", mySet.Args())
 		}
 
-		initiateMeetup(*desc, *apikey, *gid, *name, *vid, *rsvp_limit, *time)
+		eventUrl := initiateMeetup(*desc, *apikey, *gid, *name, *vid, *rsvp_limit, *time)
+		eventurlfile := []byte(eventUrl)
+		err := ioutil.WriteFile("eventurl.md", eventurlfile, 0644)
+
+		if err != nil {
+			fmt.Println("Error writing to event file", err)
+		}
+
 	case "twitter":
 		var ckey string
 		var csecret string
