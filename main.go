@@ -47,6 +47,7 @@ func main() {
 
 		initiateTweet(ckey, csecret, atoken, asecret, subject)
 	case "gmail":
+		fmt.Println("Arguments: ", os.Args)
 		var to string
 		var from string
 		var subject string
