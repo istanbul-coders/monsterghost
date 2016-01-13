@@ -78,7 +78,7 @@ func createEvent(apikey string, gid string, name string, desc string, vid string
 	return event
 }
 
-func initiateMeetup(desc string, apikey string, gid string, name string, vid string, rsvp_limit string, time string) {
+func initiateMeetup(desc string, apikey string, gid string, name string, vid string, rsvp_limit string, time string) string {
 	eventCreated := isEventCreated(name, apikey)
 	fmt.Println("Meetup Event Created? : ", eventCreated)
 
@@ -91,5 +91,6 @@ func initiateMeetup(desc string, apikey string, gid string, name string, vid str
 	fmt.Println("Name: ", name)
 	fmt.Println("Time: ", time)
 	fmt.Println("Guest Limit: ", rsvp_limit)
-	createEvent(apikey, gid, name, desc, vid, rsvp_limit, time)
+	event := createEvent(apikey, gid, name, desc, vid, rsvp_limit, time)
+	return event.EventUrl
 }
