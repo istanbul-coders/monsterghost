@@ -1,2 +1,3 @@
 # monsterghost
-Tweetbot for istanbulcoders events
+
+IstanbulCoders Event Organizer 
