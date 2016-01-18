@@ -13,10 +13,11 @@ type EmailUser struct {
 	Port        int
 }
 
-func sendEmail(emailTo string, emailFrom string, subject string, body string, username string, password string) {
+func sendEmail(emailTo string, emailCc string, emailFrom string, subject string, body string, username string, password string) {
 	to := []string{emailTo}
 	msg := []byte("From: " + emailFrom + "\r\n" +
 		"To: " + emailTo + "\r\n" +
+		"Cc: " + emailCc + "\r\n" +
 		"Subject: " + subject + "\r\n" +
 		"\r\n" +
 		body +
