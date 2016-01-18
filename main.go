@@ -59,6 +59,7 @@ func main() {
 		initiateTweet(ckey, csecret, atoken, asecret, subject)
 	case "gmail":
 		var to string
+		var cc string
 		var from string
 		var subject string
 		var body string
@@ -67,6 +68,7 @@ func main() {
 
 		mySet := flag.NewFlagSet("", flag.ExitOnError)
 		mySet.StringVar(&to, "to", "", "email to")
+		mySet.StringVar(&cc, "cc", to, "email cc")
 		mySet.StringVar(&from, "from", "", "email from")
 		mySet.StringVar(&subject, "subject", "", "email subject")
 		mySet.StringVar(&body, "body", "", "email body")
@@ -78,6 +80,6 @@ func main() {
 			fmt.Println("Error parsing arguments:", mySet.Args())
 		}
 
-		sendEmail(to, from, subject, body, username, password)
+		sendEmail(to, cc, from, subject, body, username, password)
 	}
 }
