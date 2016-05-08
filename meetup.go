@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -14,11 +16,13 @@ import (
 
 func isEventCreated(name string, apikey string) bool {
 	url := fmt.Sprintf("https://api.meetup.com/2/events?key=%s&group_urlname=Istanbul-Hackers&sign=true&status=past,upcoming", apikey)
+
 	resp, err := http.Get(url)
+
 	if err != nil {
-		fmt.Println("Error occured during meetup search", err)
-		os.Exit(1)
+		log.Fatalln("Error occured during meetup search", err)
 	}
+
 	events := new(meetup.Events)
 	decoder := json.NewDecoder(resp.Body)
 	decoder.Decode(events)
@@ -35,75 +39,65 @@ func isEventCreated(name string, apikey string) bool {
 }
 
 func createEvent(apikey string, gid string, name string, desc string, vid string, rsvp_limit string, epocs string) *meetup.Event {
-	meetup_url := "https://api.meetup.com/2/event/"
-	meetup_root_url := meetup_url
+	api_url, _ := url.Parse("https://api.meetup.com/2/events/")
 
-	key := fmt.Sprintf("?key=%s", apikey)
-	meetup_url = fmt.Sprint(meetup_url, key)
+	query := api_url.Query()
+	query.Set("key", apikey)
+	query.Set("group_urlname", "Istanbul-Hackers")
+	query.Set("group_id", gid)
+	query.Set("venue_id", vid)
+	query.Set("rsvp_limit", rsvp_limit)
+	query.Set("name", url.QueryEscape(name))
+	query.Set("description", url.QueryEscape(desc))
 
-	groupUrlName := "&group_urlname=Istanbul-Hackers"
-	meetup_url = fmt.Sprint(meetup_url, groupUrlName)
+	eventTime, err := time.Parse(time.RFC1123Z, epocs)
 
-	groupId := fmt.Sprintf("&group_id=%s", gid)
-	meetup_url = fmt.Sprint(meetup_url, groupId)
-
-	venue := fmt.Sprintf("&venue_id=%s", vid)
-	meetup_url = fmt.Sprint(meetup_url, venue)
-
-	rsvp_limit = fmt.Sprintf("&rsvp_limit=%s", rsvp_limit)
-	meetup_url = fmt.Sprint(meetup_url, rsvp_limit)
-
-	epocs_in_ms, _ := time.Parse(time.RFC1123Z, epocs)
-	epocs_txt := fmt.Sprintf("&time=%d", (epocs_in_ms.UnixNano() / int64(time.Millisecond)))
-	fmt.Println("Epocs in txt: ", epocs_txt)
-	meetup_url = fmt.Sprint(meetup_url, epocs_txt)
-
-	name = fmt.Sprintf("&name=%s", url.QueryEscape(name))
-	meetup_url = fmt.Sprint(meetup_url, name)
-
-	description := fmt.Sprintf("&description=%s", url.QueryEscape(desc))
-	meetup_url = fmt.Sprint(meetup_url, description)
-
-	fmt.Println("Url :", meetup_url)
-	resp, err := http.Post(meetup_url, "application/x-www-form-urlencoded", nil)
 	if err != nil {
-		fmt.Println("Error occured while creating meetup event", err)
-		os.Exit(1)
+		log.Fatalln("Could NOT parse event date/time:", err)
 	}
-	fmt.Println("Post Response:", resp)
+
+	query.Set("time", string(eventTime.UnixNano()/int64(time.Millisecond)))
+
+	api_url.RawQuery = query.Encode()
+
+	resp, err := http.Get(api_url.String())
+
+	if err != nil {
+		log.Fatalln("Client error while performing GET request on Meetup API:", err)
+	}
+
+	defer resp.Body.Close()
+
+	respBody, _ := ioutil.ReadAll(resp.Body)
+
+	log.Println("Meetup API Response", string(respBody))
+
+	if resp.StatusCode != http.StatusOK {
+		log.Fatalln("Unsuccessful HTTP Status from Meetup API:", resp.StatusCode)
+	}
+
 	event := new(meetup.Event)
 	decoder := json.NewDecoder(resp.Body)
 	decoder.Decode(event)
-	fmt.Println(event)
 
-	meetup_root_url = meetup_root_url + event.Id
-	meetup_root_url = fmt.Sprint(meetup_root_url, key)
-	meetup_root_url = meetup_root_url + "&announce=true"
+	log.Println("Meetup event has been created successfully:", event)
 
-	fmt.Println("Meetup update request url:", meetup_root_url)
-	resp, err = http.Post(meetup_root_url, "application/x-www-form-urlencoded", nil)
-	if err != nil {
-		fmt.Println("Error occured while announcing meetup event", err)
-
-		os.Exit(1)
-	}
-	fmt.Println("Post Response:", resp)
 	return event
 }
 
 func initiateMeetup(desc string, apikey string, gid string, name string, vid string, rsvp_limit string, time string) string {
 	eventCreated := isEventCreated(name, apikey)
-	fmt.Println("Meetup Event Created? : ", eventCreated)
+	log.Println("Meetup Event Created? : ", eventCreated)
 
 	if eventCreated {
-		os.Exit(0)
+		os.Exit(0) //FIXME This is very confusing
 	}
 
-	fmt.Println("Creating event with following parameters:")
-	fmt.Println("Desc: ", desc)
-	fmt.Println("Name: ", name)
-	fmt.Println("Time: ", time)
-	fmt.Println("Guest Limit: ", rsvp_limit)
+	log.Println("Creating event with following parameters:")
+	log.Println("Desc: ", desc)
+	log.Println("Name: ", name)
+	log.Println("Time: ", time)
+	log.Println("Guest Limit: ", rsvp_limit)
 	event := createEvent(apikey, gid, name, desc, vid, rsvp_limit, time)
 
 	return event.EventUrl
