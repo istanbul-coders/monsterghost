@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"golang.org/x/oauth2"
+	"golang.org/x/net/context"
 )
 
 var eventFilePath = os.Getenv("HOME") + "/Event Schedule.xlsx"
@@ -106,10 +107,12 @@ func createTransport() *oauth2.Transport {
 		log.Fatalf("Unable to get path to cached credential file. %v", err)
 	}
 
+	config := getConfig()
 	token, err := tokenFromFile(cacheFile)
 
+	tokenSource := config.TokenSource(context.Background(), token)
 	return &oauth2.Transport{
-		Source:oauth2.StaticTokenSource(token),
+		Source:tokenSource,
 		Base:http.DefaultTransport,
 	}
 }

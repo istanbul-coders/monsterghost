@@ -43,8 +43,8 @@ func main() {
 		}
 
 		eventUrl := initiateMeetup(*desc, *apikey, *gid, *name, *vid, *rsvp_limit, *time)
-		eventurlfile := []byte(eventUrl)
-		err := ioutil.WriteFile("eventurl.md", eventurlfile, 0644)
+		eventUrlFile := []byte(eventUrl)
+		err := ioutil.WriteFile("eventurl.md", eventUrlFile, 0644)
 		check(err)
 
 	case "twitter":
@@ -93,7 +93,6 @@ func main() {
 		sendEmail(to, cc, from, subject, body, username, password)
 
 	case "calendar":
-
 		client := createGoogleApiClient()
 
 		driveService, err := createDriveService(client)
