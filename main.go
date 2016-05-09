@@ -1,11 +1,20 @@
 package main
 
 import (
-	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
+	"google.golang.org/api/drive/v2"
+	"log"
+	"flag"
+	"io/ioutil"
 )
+
+const (
+	EVENT_LOCATION = "Bahcesehir Universitesi Besiktas Kampus Ciragan Caddesi Osmanpasa Mektebi Sokak No: 4 - D504 Nolu sınıf"
+	EVENT_FILE_NAME = "Event Schedule"
+)
+
+var environmentName = os.Getenv("HOME")
 
 func check(e error) {
 	if e != nil {
@@ -17,6 +26,7 @@ func main() {
 	commandType := os.Args[1]
 
 	switch commandType {
+
 	case "meetup":
 		mySet := flag.NewFlagSet("", flag.ExitOnError)
 		var desc = mySet.String("desc", "", "Description of the meetup event")
@@ -33,8 +43,13 @@ func main() {
 		}
 
 		eventUrl := initiateMeetup(*desc, *apikey, *gid, *name, *vid, *rsvp_limit, *time)
+<<<<<<< HEAD
 		eventurlfile := []byte(eventUrl)
 		err := ioutil.WriteFile("eventurl.md", eventurlfile, 0644)
+=======
+		eventUrlFile := []byte(eventUrl)
+		err := ioutil.WriteFile("eventurl.md", eventUrlFile, 0644)
+>>>>>>> 85cee804b66592fd6f3f52deb27ddef1da20d420
 		check(err)
 
 	case "twitter":
@@ -81,5 +96,49 @@ func main() {
 		}
 
 		sendEmail(to, cc, from, subject, body, username, password)
+
+	case "calendar":
+<<<<<<< HEAD
+
+=======
+>>>>>>> 85cee804b66592fd6f3f52deb27ddef1da20d420
+		client := createGoogleApiClient()
+
+		driveService, err := createDriveService(client)
+
+		if err != nil {
+			log.Fatalf("Can not instantiate google drive service client: %v", err)
+		}
+
+		transport := createTransport()
+
+		downloadFile(driveService, transport, &drive.File{
+			DownloadUrl:getDownloadUrlByName(driveService, EVENT_FILE_NAME),
+		})
+
+		calendarService, err := createCalendarService(client)
+
+		if err != nil {
+			log.Fatalf("Can not instantiate google calendar service: %v", err)
+		}
+
+		eventListFromFile := getEventListInEventFile()
+
+		for _, event := range eventListFromFile {
+
+			if event.date != "" {
+
+				information := EventInformation{
+					date:convertDateStringToInnerFormat(event.date),
+					title:event.title,
+					description:event.description,
+					location: event.location,
+				}
+
+				insertEventToCalendar(calendarService, information)
+
+			}
+		}
 	}
 }
+
