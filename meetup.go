@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -56,7 +57,7 @@ func createEvent(apikey string, gid string, name string, desc string, vid string
 		log.Fatalln("Could NOT parse event date/time:", err)
 	}
 
-	query.Set("time", string(eventTime.UnixNano()/int64(time.Millisecond)))
+	query.Set("time", strconv.FormatInt(eventTime.UnixNano()/int64(time.Millisecond), 10))
 
 	api_url.RawQuery = query.Encode()
 
