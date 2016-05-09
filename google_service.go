@@ -20,20 +20,36 @@ import (
 var clientIdFile = environmentName + "/client_id.json"
 
 func createGoogleApiClient() *http.Client {
+<<<<<<< HEAD
 	ctx := context.Background()
 	b, err := ioutil.ReadFile(clientIdFile)
+=======
+	return getClient(context.Background(), getConfig())
+}
+
+func getConfig() *oauth2.Config {
+	clientIdFile, err := ioutil.ReadFile(clientIdFile)
+>>>>>>> 85cee804b66592fd6f3f52deb27ddef1da20d420
 
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
 
+<<<<<<< HEAD
 	config, err := google.ConfigFromJSON(b, drive.DriveScope, calendar.CalendarScope)
+=======
+	config, err := google.ConfigFromJSON(clientIdFile, drive.DriveScope, calendar.CalendarScope)
+>>>>>>> 85cee804b66592fd6f3f52deb27ddef1da20d420
 
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
 
+<<<<<<< HEAD
 	return getClient(ctx, config)
+=======
+	return config
+>>>>>>> 85cee804b66592fd6f3f52deb27ddef1da20d420
 }
 
 func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
@@ -44,6 +60,10 @@ func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
 	}
 
 	tok, err := tokenFromFile(cacheFile)
+<<<<<<< HEAD
+=======
+
+>>>>>>> 85cee804b66592fd6f3f52deb27ddef1da20d420
 	if err != nil {
 		tok = getTokenFromWeb(config)
 		saveToken(cacheFile, tok)

@@ -43,8 +43,13 @@ func main() {
 		}
 
 		eventUrl := initiateMeetup(*desc, *apikey, *gid, *name, *vid, *rsvp_limit, *time)
+<<<<<<< HEAD
 		eventurlfile := []byte(eventUrl)
 		err := ioutil.WriteFile("eventurl.md", eventurlfile, 0644)
+=======
+		eventUrlFile := []byte(eventUrl)
+		err := ioutil.WriteFile("eventurl.md", eventUrlFile, 0644)
+>>>>>>> 85cee804b66592fd6f3f52deb27ddef1da20d420
 		check(err)
 
 	case "twitter":
@@ -93,7 +98,10 @@ func main() {
 		sendEmail(to, cc, from, subject, body, username, password)
 
 	case "calendar":
+<<<<<<< HEAD
 
+=======
+>>>>>>> 85cee804b66592fd6f3f52deb27ddef1da20d420
 		client := createGoogleApiClient()
 
 		driveService, err := createDriveService(client)
