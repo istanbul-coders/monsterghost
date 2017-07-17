@@ -50,9 +50,9 @@ func getEventListInEventFile() []EventInformation {
 		for _, row := range sheet.Rows {
 
 			if len(row.Cells) >= MIN_NECESSARY_CELL_SIZE {
-				date, _ := row.Cells[0].String()
-				title, _ := row.Cells[1].String()
-				description, _ := row.Cells[2].String()
+				date, _ := row.Cells[0].FormattedValue()
+				title, _ := row.Cells[1].FormattedValue()
+				description, _ := row.Cells[2].FormattedValue()
 
 				if isConvenientEvent(i, date, description) {
 
